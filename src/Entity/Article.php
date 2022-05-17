@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ArticleRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 class Article
 {
@@ -13,13 +15,28 @@ class Article
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'text', length: 255)]
+    #[Assert\Length(
+        min: 5,
+        max: 255,
+        minMessage: 'Your title must be at least {{ limit }} characters long',
+        maxMessage: 'Your title cannot be longer than {{ limit }} characters',
+    )]
     private $title;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\Length(
+        min: 10,
+        max: 255,
+        minMessage: 'Your content must be at least {{ limit }} characters long',
+        maxMessage: 'Your content cannot be longer than {{ limit }} characters',
+    )]
     private $content;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\Url(
+        message: 'The url {{ value }} is not a valid url',
+    )]
     private $image;
 
     #[ORM\Column(type: 'datetime_immutable')]

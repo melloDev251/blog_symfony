@@ -7,6 +7,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Article;
 use App\Repository\ArticleRepository;
+// use Doctrine\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
+
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\HttpFoundation\Request;
+
 
 class BlogController extends AbstractController
 {
@@ -45,6 +53,47 @@ class BlogController extends AbstractController
 
         return $this->render('blog/show.html.twig', [
             'article' => $article
+        ]);
+    }
+
+    #[Route('/blog/new', name: 'app_create')]
+    #[Route('/blog/{id}/edit', name: 'app_edit')]
+    public function form(Article $article = null, Request $request, EntityManagerInterface $manager): Response
+    {
+
+        // $article->setTitle("Titre de l'exemple")
+        //         ->setContent("Contenu de l'article ...");
+
+        if (!$article) {
+            $article = new Article();
+        }
+
+
+        $form = $this->createFormBuilder($article)
+            ->add('title')
+            ->add('content')
+            ->add('image')
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            if (!$article->getId()) {
+                $article->setCreatedAt(new \DateTimeImmutable());
+            }
+
+            $manager->persist($article);
+            $manager->flush();
+
+            return $this->redirectToRoute('app_show', ['id' => $article->getId()]);
+        }
+
+        dump($article);
+
+        return $this->render('blog/create.html.twig', [
+            'formArticle' => $form->createView(),
+            'editMode' => $article->getId() !== null
         ]);
     }
 }
